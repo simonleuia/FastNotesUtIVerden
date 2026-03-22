@@ -1,6 +1,14 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import LogoutButton from '@/components/LogoutButton';
 import NewNoteButton from '@/components/NewNoteButton';
@@ -73,10 +81,22 @@ export default function HomeScreen() {
                   params: { id: item.id },
                 })
               }>
-              <Text style={styles.noteTitle}>{item.title}</Text>
-              <Text style={styles.notePreview}>
-                {item.content ? item.content.slice(0, 50) : 'No content'}
-              </Text>
+              <View style={styles.noteRow}>
+                <View style={styles.textContent}>
+                  <Text style={styles.noteTitle}>{item.title}</Text>
+                  <Text style={styles.notePreview}>
+                    {item.content ? item.content.slice(0, 70) : 'No content'}
+                  </Text>
+                </View>
+
+                {item.image_url && (
+                  <Image
+                    source={{ uri: item.image_url }}
+                    style={styles.noteImage}
+                    resizeMode="cover"
+                  />
+                )}
+              </View>
             </Pressable>
           )}
         />
@@ -119,6 +139,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+  },
+  noteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  textContent: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  noteImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 10,
+    backgroundColor: '#f3f4f6',
   },
   noteTitle: {
     fontSize: 16,

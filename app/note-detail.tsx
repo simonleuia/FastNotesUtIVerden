@@ -2,6 +2,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Alert,
+  Image,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -12,6 +14,7 @@ import DeleteButton from '@/components/DeleteButton';
 import EditButton from '@/components/EditButton';
 import SaveChangesButton from '@/components/SaveChangesButton';
 import { DatabaseNote, deleteNote, fetchNotes, updateNote } from '@/lib/notes';
+import { deleteNoteImageByPath } from '@/lib/storage';
 
 export default function NoteDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -88,6 +91,15 @@ export default function NoteDetailScreen() {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
+            if (note.image_path) {
+              const { error: imageError } = await deleteNoteImageByPath(note.image_path);
+
+              if (imageError) {
+                Alert.alert('Image delete failed', imageError.message);
+                return;
+              }
+            }
+
             const { error } = await deleteNote(note.id);
 
             if (error) {
@@ -125,43 +137,55 @@ export default function NoteDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.contentWrapper}>
-        {isEditing ? (
-          <>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-            />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.contentWrapper}>
+          {isEditing ? (
+            <>
+              <TextInput
+                style={styles.input}
+                value={title}
+                onChangeText={setTitle}
+              />
 
-            <TextInput
-              style={styles.textArea}
-              value={content}
-              onChangeText={setContent}
-              multiline
-              textAlignVertical="top"
-            />
+              <TextInput
+                style={styles.textArea}
+                value={content}
+                onChangeText={setContent}
+                multiline
+                textAlignVertical="top"
+              />
 
-            <SaveChangesButton onPress={handleSave} />
-          </>
-        ) : (
-          <>
-            <Text style={styles.title}>{note.title}</Text>
-            <Text style={styles.content}>{note.content}</Text>
+              <SaveChangesButton onPress={handleSave} />
+            </>
+          ) : (
+            <>
+              <Text style={styles.title}>{note.title}</Text>
+              <Text style={styles.content}>{note.content}</Text>
 
-            <View style={styles.metaBox}>
-              <Text style={styles.metaText}>
-                Created by: {note.creator_email ?? 'Unknown user'}
-              </Text>
-              <Text style={styles.metaText}>
-                Last updated: {formatDate(note.updated_at)}
-              </Text>
-            </View>
+              {note.image_url && (
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: note.image_url }}
+                    style={styles.noteImage}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
 
-            <EditButton onPress={() => setIsEditing(true)} />
-          </>
-        )}
-      </View>
+              <View style={styles.metaBox}>
+                <Text style={styles.metaText}>
+                  Created by: {note.creator_email ?? 'Unknown user'}
+                </Text>
+                <Text style={styles.metaText}>
+                  Last updated: {formatDate(note.updated_at)}
+                </Text>
+              </View>
+
+              <EditButton onPress={() => setIsEditing(true)} />
+            </>
+          )}
+        </View>
+      </ScrollView>
 
       {!isEditing && (
         <View style={styles.deleteWrapper}>
@@ -177,6 +201,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#ffffff',
+  },
+  scrollContent: {
+    paddingBottom: 20,
   },
   contentWrapper: {
     flex: 1,
@@ -194,6 +221,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: '#333333',
+  },
+  imageWrapper: {
+    width: '100%',
+    height: 260,
+    borderRadius: 12,
+    marginTop: 20,
+    backgroundColor: '#f3f4f6',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noteImage: {
+    width: '100%',
+    height: '100%',
   },
   metaBox: {
     marginTop: 20,

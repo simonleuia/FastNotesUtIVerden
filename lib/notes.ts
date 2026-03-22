@@ -6,6 +6,8 @@ export type DatabaseNote = {
   content: string;
   user_id: string;
   creator_email: string | null;
+  image_url: string | null;
+  image_path: string | null;
   updated_at: string;
 };
 
@@ -22,7 +24,9 @@ export async function createNote(
   title: string,
   content: string,
   userId: string,
-  creatorEmail: string
+  creatorEmail: string,
+  imageUrl?: string | null,
+  imagePath?: string | null
 ) {
   const { data, error } = await supabase
     .from('notes')
@@ -32,6 +36,8 @@ export async function createNote(
         content: content.trim(),
         user_id: userId,
         creator_email: creatorEmail,
+        image_url: imageUrl ?? null,
+        image_path: imagePath ?? null,
       },
     ])
     .select()
