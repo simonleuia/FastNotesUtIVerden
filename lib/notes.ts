@@ -11,11 +11,15 @@ export type DatabaseNote = {
   updated_at: string;
 };
 
-export async function fetchNotes() {
+export async function fetchNotes(offset: number = 0, limit: number = 5) {
+  const from = offset;
+  const to = offset + limit - 1;
+
   const { data, error } = await supabase
     .from('notes')
     .select('*')
-    .order('updated_at', { ascending: false });
+    .order('updated_at', { ascending: false })
+    .range(from, to);
 
   return { data, error };
 }

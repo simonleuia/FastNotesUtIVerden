@@ -15,34 +15,64 @@ import NewNoteButton from '@/components/NewNoteButton';
 import { getSession, signOut } from '@/lib/auth';
 import { DatabaseNote, fetchNotes } from '@/lib/notes';
 
+const PAGE_SIZE = 5;
+
 export default function HomeScreen() {
   const [notes, setNotes] = useState<DatabaseNote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadInitialData = useCallback(async () => {
+    setLoading(true);
+
+    const session = await getSession();
+
+    if (!session) {
+      router.replace('/login');
+      return;
+    }
+
+    const { data, error } = await fetchNotes(0, PAGE_SIZE);
+
+    if (error) {
+      setNotes([]);
+      setHasMore(false);
+    } else {
+      const fetchedNotes = data ?? [];
+      setNotes(fetchedNotes);
+      setHasMore(fetchedNotes.length === PAGE_SIZE);
+    }
+
+    setLoading(false);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      async function loadData() {
-        const session = await getSession();
-
-        if (!session) {
-          router.replace('/login');
-          return;
-        }
-
-        const { data, error } = await fetchNotes();
-
-        if (error) {
-          setNotes([]);
-        } else {
-          setNotes(data ?? []);
-        }
-
-        setLoading(false);
-      }
-
-      loadData();
-    }, [])
+      loadInitialData();
+    }, [loadInitialData])
   );
+
+  async function handleLoadMore() {
+    if (loadingMore || !hasMore) {
+      return;
+    }
+
+    setLoadingMore(true);
+
+    const { data, error } = await fetchNotes(notes.length, PAGE_SIZE);
+
+    if (!error && data) {
+      setNotes((prev) => [...prev, ...data]);
+      setHasMore(data.length === PAGE_SIZE);
+    }
+
+    if (error || !data) {
+      setHasMore(false);
+    }
+
+    setLoadingMore(false);
+  }
 
   async function handleLogout() {
     const { error } = await signOut();
@@ -99,6 +129,18 @@ export default function HomeScreen() {
               </View>
             </Pressable>
           )}
+          ListFooterComponent={
+            hasMore ? (
+              <Pressable
+                style={styles.loadMoreButton}
+                onPress={handleLoadMore}
+                disabled={loadingMore}>
+                <Text style={styles.loadMoreButtonText}>
+                  {loadingMore ? 'Loading...' : 'Load more'}
+                </Text>
+              </Pressable>
+            ) : null
+          }
         />
       )}
 
@@ -163,5 +205,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
     marginTop: 4,
+  },
+  loadMoreButton: {
+    marginTop: 8,
+    marginBottom: 24,
+    paddingVertical: 14,
+    borderRadius: 10,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+  },
+  loadMoreButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
