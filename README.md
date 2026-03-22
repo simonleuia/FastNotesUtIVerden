@@ -1,75 +1,120 @@
-# CloudNote
+# FastNotes
 
-This project was developed as part of Assignment 3.
+This project was developed as part of Assignment 4.
 
-CloudNote is a collaborative note-taking app built with React Native (Expo) and Supabase.
-The app allows multiple users to create, view, edit, and delete shared notes, now with support for images and notifications.
+FastNotes is a mobile note-taking application built with React Native (Expo) and Supabase.  
+The focus of this assignment is testing, optimization, and preparing the app for production.
 
 ---
 
 ## GitHub Repository
 
-Project source code:
-https://github.com/simonleuia/NativeFunctions
+Project source code:  
+https://github.com/simonleuia/FastNotesUtIVerden
 
 ---
 
 ## Features
 
-* User authentication (sign up, login, logout)
-* Persistent login (session is remembered)
-* Create notes
-* View all notes from all users
-* Edit notes
-* Delete notes with confirmation
-* Attach images to notes (camera or gallery)
-* Image preview before saving
-* Local notifications when a new note is created
-* Input validation (no empty fields)
-* Success and error messages
+* User authentication (login/logout)
+* Create notes with optional images
+* View all notes
+* Pagination (load notes in batches)
+* Local notifications on note creation
+* Image upload using camera or gallery
 
 ---
 
-## Requirements checklist
+## Testing
 
-### Camera Integration
+The project uses **Jest** for testing.
 
-* [x] Permissions for camera and media library
-* [x] User can take a photo inside the app
-* [x] User can pick an image from gallery
-* [x] Selected image is previewed before saving
+Implemented tests:
 
----
+* Unit test for fetching notes
+* Mocked Supabase database calls
+* Verification of pagination logic (`range` usage)
 
-### Storage & Validation
+Run tests:
 
-* [x] Client-side validation:
-  * Max size 15MB
-  * Allowed formats: JPG, PNG, WebP
-* [x] Images uploaded to Supabase Storage
-* [x] Unique file names used to prevent overwriting
-* [x] Image URL stored in database and linked to note
+```bash
+npm test
+```
 
 ---
 
-### UI/UX (Images & Feedback)
+## Optimization & Production Readiness
 
-* [x] Loading state during upload (spinner + disabled save button)
-* [x] Images displayed without stretching (correct aspect ratio)
-* [x] Images shown:
-  * As thumbnails in note list
-  * In full view in note details
-* [x] Clear error messages for:
-  * Invalid file format
-  * File too large
-  * Upload failure
+### Pagination
+
+* [x] Only 5 notes are fetched at a time
+* [x] "Load more" button fetches the next 5 notes
+* [x] Uses Supabase `.range(start, end)`
+
+### Resource Management
+
+* [x] Camera is only used when needed (not running in background)
+
+### Code Quality
+
+* [x] No unnecessary `console.log` statements
+* [x] Clean and readable code structure
 
 ---
 
-### Notifications
+## Installation
 
-* [x] System permission requested for notifications
-* [x] Local notification triggered after saving a note
-* [x] Notification includes note title
+Clone the repository:
 
-Example:
+```bash
+git clone https://github.com/simonleuia/FastNotesUtIVerden
+cd FastNotesUtIVerden
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the app:
+
+```bash
+npx expo start
+```
+
+---
+
+## Running the App
+
+* Android emulator → press `a`
+* iOS simulator (Mac only) → press `i`
+* Physical device → scan QR code with Expo Go
+
+---
+
+## Build (APK)
+
+To build the app:
+
+```bash
+npx expo prebuild
+npx expo run:android
+```
+
+Or using EAS:
+
+```bash
+npm install -g eas-cli
+eas build -p android
+```
+
+---
+
+## Demo
+
+The demo video shows:
+
+* Running tests in the terminal
+* Pagination with "Load more"
+* Creating notes with images
